@@ -5,22 +5,24 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+# Force Node.js 24 to avoid deprecation warnings (optional)
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build-and-push:
     runs-on: s12
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4   # Update to @v5 if available, but FORCE_NODE24 works
 
-      # 🔧 Grant access to Docker socket (for self-hosted runner)
+      # Grant access to Docker socket (for self-hosted runner)
       - name: Allow Docker socket access
         run: |
           sudo chmod 666 /var/run/docker.sock
-          # Alternatively, add the runner user to docker group (requires re-login)
-          # sudo usermod -aG docker $USER
 
-      # Docker installation step (kept for self-hosted runners that may not have Docker)
+      # Install Docker if missing (self-hosted)
       - name: Install Docker (if needed)
         run: |
           if ! command -v docker &> /dev/null; then
@@ -43,18 +45,19 @@ jobs:
       - name: List running containers
         run: docker ps
 
-      # 🔐 Login to Docker Hub using token as password
+      # Login to Docker Hub using token (as password)
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.ACCESS_TOKEN }}   # Token from Docker Hub
+          password: ${{ secrets.ACCESS_TOKEN }}
 
-      # ✅ Corrected push command (username is already part of the image name)
+      # Fixed push command - use correct image name (username already in tag)
       - name: Push image to Docker Hub
         run: docker push s5carles/ci-cd:s12
 
-      - name: Cleanup (optional)
+      # Cleanup
+      - name: Cleanup
         if: always()
         run: |
           docker stop s12-ci-cd || true
