@@ -5,17 +5,17 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
-# Force Node.js 24 to avoid deprecation warnings (optional)
+# Force Node.js 34 to avoid deprecation warnings (optional)
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE34: true
 
 jobs:
   build-and-push:
-    runs-on: s12
+    runs-on: s13
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4   # Update to @v5 if available, but FORCE_NODE24 works
+        uses: actions/checkout@v4   # Update to @v5 if available, but FORCE_NODE34 works
 
       
       
@@ -36,14 +36,14 @@ jobs:
           sudo chmod 666 /var/run/docker.sock
 
       - name: Build Docker image
-        run: docker build -t s5carles/ci-cd:s12 .
+        run: docker build -t s5carles/ci-cd:s13 .
 
       - name: Verify built image
-        run: docker images | grep s5carles/ci-cd:s12
+        run: docker images | grep s5carles/ci-cd:s13
 
-      - name: Run container with port mapping (host 8080 -> container 80)
+      - name: Run container with port mapping (host 8081 -> container 80)
         run: |
-          docker run -d -p 8080:80 --name s12-ci-cd s5carles/ci-cd:s12
+          docker run -d -p 8081:80 --name s13-ci-cd s5carles/ci-cd:s13
 
       - name: List running containers
         run: docker ps
@@ -57,11 +57,6 @@ jobs:
 
       # Fixed push command - use correct image name (username already in tag)
       - name: Push image to Docker Hub
-        run: docker push s5carles/ci-cd:s12
+        run: docker push s5carles/ci-cd:s13
 
-      # Cleanup
-      - name: Cleanup
-        if: always()
-        run: |
-          docker stop s12-ci-cd || true
-          docker rm s12-ci-cd || true
+      
