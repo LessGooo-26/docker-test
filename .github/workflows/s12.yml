@@ -58,5 +58,6 @@ jobs:
       # Fixed push command - use correct image name (username already in tag)
       - name: Push image to Docker Hub
         run: docker push s5carles/ci-cd:s15
-
+        
+ # META AI
       
